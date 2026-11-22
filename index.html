@@ -1,1 +1,853 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>சர்வநிச்சயம் செய்திகள் — தமிழ் கலாச்சாரம் & பண்பாடு</title>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --card: #ffffff;
+      --text: #1c1917;
+      --muted: #44403c;
+      --primary: #991b1b;
+      --accent: #b45309;
+      --border: #e7e5e4;
+    }
+
+    body.dark {
+      --bg: #0c0a09;
+      --card: #1c1917;
+      --text: #fafaf9;
+      --muted: #d6d3d1;
+      --primary: #ef4444;
+      --accent: #f59e0b;
+      --border: #292524;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Noto Sans Tamil", system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .top-strip {
+      background: #1c1917;
+      color: #fef3c7;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .live-pill {
+      background: #991b1b;
+      color: #fef2f2;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .site-header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #991b1b, #b45309);
+      color: #fffbeb;
+      font-weight: 800;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .admin-link-btn {
+      background: var(--primary);
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    .theme-btn {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .breaking-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .breaking-tag {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .breaking-text {
+      font-size: 0.88rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hero-banner {
+      border-radius: 18px;
+      overflow: hidden;
+      background: linear-gradient(125deg, #450a0a, #7c2d12, #78350f);
+      color: #fffbeb;
+      padding: 28px 22px;
+      margin-bottom: 16px;
+      text-align: center;
+      box-shadow: 0 10px 24px rgba(28, 25, 23, 0.16);
+    }
+
+    .hero-main-title {
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
+
+    .hero-tagline {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fde68a;
+      margin-top: 6px;
+    }
+
+    .hero-cats {
+      margin-top: 10px;
+      font-size: 0.84rem;
+      color: #fed7aa;
+    }
+
+    .cat-list {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+    }
+
+    .cat-btn {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 15px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .cat-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .search-box {
+      width: 100%;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      margin-bottom: 18px;
+      outline: none;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    .count-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      gap: 20px;
+    }
+
+    .news-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .news-thumb {
+      position: relative;
+      width: 100%;
+      height: 195px;
+      background: #292524;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .news-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(28, 25, 23, 0.88);
+      color: #fef3c7;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid rgba(254, 243, 199, 0.25);
+    }
+
+    .news-content {
+      padding: 16px;
+    }
+
+    .news-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: #78716c;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .news-title {
+      font-size: 1.06rem;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .news-preview {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.75;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .read-more-btn {
+      margin-top: 10px;
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.86rem;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .news-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: rgba(120, 113, 108, 0.06);
+    }
+
+    .action-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      padding: 6px 11px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+    }
+
+    .btn.liked {
+      background: #fee2e2;
+      border-color: #f87171;
+      color: #dc2626;
+    }
+
+    .btn-wa {
+      background: #16a34a;
+      color: #fff;
+      border-color: #16a34a;
+    }
+
+    .btn-fb {
+      background: #1d4ed8;
+      color: #fff;
+      border-color: #1d4ed8;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 10, 9, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 999;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .close-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .modal-img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .modal-body {
+      font-size: 0.96rem;
+      color: var(--muted);
+      line-height: 1.9;
+      white-space: pre-line;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-strip">
+    <span class="live-pill">● சர்வநிச்சயம் செய்திகள்</span>
+    <span id="liveClock"></span>
+  </div>
+
+  <div class="container">
+    <header class="site-header">
+      <div class="brand-left">
+        <div class="brand-mark">ச</div>
+        <div>
+          <div class="brand-title">சர்வநிச்சயம் செய்திகள்</div>
+          <div class="brand-sub">தமிழ் கலாச்சாரம் · பண்பாடு · மரபு · செய்திகள்</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="admin.html" class="admin-link-btn">✍️ செய்தி போட</a>
+        <button type="button" class="theme-btn" id="themeBtn">🌙 இரவு</button>
+      </div>
+    </header>
+
+    <div class="breaking-bar">
+      <span class="breaking-tag">சிறப்புச் செய்தி</span>
+      <div class="breaking-text" id="breakingText">தமிழ்ப் பண்பாடு, மரபு மற்றும் சமகாலச் செய்திகள்</div>
+    </div>
+
+    <section class="hero-banner">
+      <div class="hero-main-title">சர்வநிச்சயம் செய்திகள்</div>
+      <div class="hero-tagline">தமிழ் கலாச்சாரமும் பண்பாடும் காக்கும் செய்தித் தளம்</div>
+      <div class="hero-cats">தமிழ்ப் பண்பாடு · கலாச்சாரம் & மரபு · இலங்கைத் தமிழர் · தமிழகம் · இலக்கியம் & கலை</div>
+    </section>
+
+    <div class="cat-list" id="catList">
+      <button type="button" class="cat-btn active" data-cat="அனைத்தும்">அனைத்தும்</button>
+      <button type="button" class="cat-btn" data-cat="தமிழ்ப் பண்பாடு">தமிழ்ப் பண்பாடு</button>
+      <button type="button" class="cat-btn" data-cat="கலாச்சாரம் & மரபு">கலாச்சாரம் & மரபு</button>
+      <button type="button" class="cat-btn" data-cat="இலங்கைத் தமிழர்">இலங்கைத் தமிழர்</button>
+      <button type="button" class="cat-btn" data-cat="தமிழகம்">தமிழகம்</button>
+      <button type="button" class="cat-btn" data-cat="இலக்கியம் & கலை">இலக்கியம் & கலை</button>
+    </div>
+
+    <input
+      type="text"
+      id="searchInput"
+      class="search-box"
+      placeholder="🔍 தமிழ் கலாச்சாரம், பண்பாடு மற்றும் செய்திகளைத் தேடவும்..."
+    />
+
+    <div class="section-head">
+      <h2 class="section-title">சமீபத்திய செய்திகள்</h2>
+      <span class="count-pill" id="countPill">0 செய்திகள்</span>
+    </div>
+
+    <div class="news-grid" id="newsGrid"></div>
+  </div>
+
+  <div class="modal-backdrop" id="articleModal">
+    <div class="modal-box">
+      <div class="modal-top">
+        <span id="modalCategory" class="count-pill">செய்தி</span>
+        <button type="button" class="close-btn" id="closeModalBtn">✕ மூடு</button>
+      </div>
+      <img id="modalImg" class="modal-img" src="" alt="" />
+      <h2 id="modalTitle" class="modal-title"></h2>
+      <div id="modalMeta" class="news-meta"></div>
+      <div id="modalBody" class="modal-body"></div>
+      <div class="news-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <script>
+    const FALLBACK_NEWS = [
+      {
+        id: "sn-1",
+        title: "தமிழ் மரபுப் பண்பாடும் வாழ்வியல் விழுமியங்களும்",
+        description: "விருந்தோம்பல், குடும்ப ஒற்றுமை, இயற்கையோடு இணைந்த வாழ்க்கை முறை ஆகியவை தமிழ் பண்பாட்டின் அடித்தளமாகத் திகழ்கின்றன. தலைமுறை தலைமுறையாகக் காக்கப்படும் இம்மரபுகள் இன்றைய வாழ்விலும் வழிகாட்டியாக உள்ளன.",
+        category: "தமிழ்ப் பண்பாடு",
+        source: "சர்வநிச்சயம் செய்திகள்",
+        date: "இன்று",
+        likes: 24
+      },
+      {
+        id: "sn-2",
+        title: "பண்டைய கலை வடிவங்களும் பாரம்பரிய விழாக்களும்",
+        description: "கூத்து, பரதம், நாட்டுப்புறக் கலைகள் மற்றும் பாரம்பரிய விழாக்கள் தமிழர் கலாச்சாரத்தின் உயிர்த்துடிப்பை வெளிப்படுத்துகின்றன. இளைய தலைமுறையினரிடம் இவற்றை எடுத்துச் செல்வது காலத்தின் தேவையாக உள்ளது.",
+        category: "கலாச்சாரம் & மரபு",
+        source: "சர்வநிச்சயம் செய்திகள்",
+        date: "இன்று",
+        likes: 19
+      },
+      {
+        id: "sn-3",
+        title: "தமிழ் இலக்கியமும் நீதி நெறிகளும் காட்டும் வாழ்வு வழி",
+        description: "சங்க இலக்கியங்களும் திருக்குறள் உள்ளிட்ட நீதி நூல்களும் மனித நேயம், அறம், ஒழுக்கம் ஆகியவற்றை எளிய முறையில் உணர்த்துகின்றன.",
+        category: "இலக்கியம் & கலை",
+        source: "சர்வநிச்சயம் செய்திகள்",
+        date: "இன்று",
+        likes: 22
+      }
+    ];
+
+    let allNews = [];
+    let selectedCategory = "அனைத்தும்";
+    let searchQuery = "";
+    const coverCache = {};
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("liveClock").textContent = now.toLocaleString("ta-IN", {
+        weekday: "short",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+
+    const themeBtn = document.getElementById("themeBtn");
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      themeBtn.textContent = isDark ? "☀️ பகல்" : "🌙 இரவு";
+    });
+
+    function formatItemDate(item) {
+      if (item.date) return item.date;
+      if (item.publishedAt) {
+        const d = new Date(item.publishedAt);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString("ta-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          });
+        }
+      }
+      return "இன்று";
+    }
+
+    function generateNewsCover(title = "", category = "சர்வநிச்சயம்") {
+      const cacheKey = `${category}__${title}`;
+      if (coverCache[cacheKey]) return coverCache[cacheKey];
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 800;
+      canvas.height = 420;
+      const ctx = canvas.getContext("2d");
+
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, "#450a0a");
+      grad.addColorStop(1, "#92400e");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "rgba(254, 243, 199, 0.08)";
+      ctx.beginPath();
+      ctx.arc(690, 85, 130, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#fde68a";
+      ctx.font = "bold 22px sans-serif";
+      ctx.fillText(`சர்வநிச்சயம் செய்திகள்  •  ${category || "தமிழ் மரபு"}`, 42, 68);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 34px 'Noto Sans Tamil', sans-serif";
+
+      const words = (title || "சமீபத்திய செய்தி").split(" ");
+      const lines = [];
+      let currentLine = "";
+      for (let i = 0; i < words.length; i++) {
+        const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
+        if (ctx.measureText(testLine).width > 710 && currentLine) {
+          lines.push(currentLine);
+          currentLine = words[i];
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+
+      const visibleLines = lines.slice(0, 4);
+      if (lines.length > 4) visibleLines[3] = visibleLines[3] + "...";
+
+      let y = 135;
+      visibleLines.forEach((line) => {
+        ctx.fillText(line, 42, y);
+        y += 48;
+      });
+
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(42, 365, 160, 6);
+
+      const dataUrl = canvas.toDataURL("image/png");
+      coverCache[cacheKey] = dataUrl;
+      return dataUrl;
+    }
+
+    function getCardImage(item) {
+      const generated = generateNewsCover(item.title, item.category);
+      if (item.image && item.image.trim()) {
+        return { primary: item.image.trim(), fallback: generated };
+      }
+      return { primary: generated, fallback: generated };
+    }
+
+    function getLikes() {
+      try {
+        return JSON.parse(localStorage.getItem("sarvanichayam_likes_v1") || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveLikes(likes) {
+      localStorage.setItem("sarvanichayam_likes_v1", JSON.stringify(likes));
+    }
+
+    function shareWhatsApp(item) {
+      const msg = encodeURIComponent(`${item.title}\n\n${item.description || ""}\n\n${window.location.href}`);
+      window.open(`https://wa.me/?text=${msg}`, "_blank", "noopener");
+    }
+
+    function shareFacebook(item) {
+      const url = encodeURIComponent(window.location.href);
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank", "noopener");
+    }
+
+    function openArticleModal(item, coverSrc, fallbackSrc, fullText) {
+      document.getElementById("modalCategory").textContent = item.category || "செய்திகள்";
+      const modalImg = document.getElementById("modalImg");
+      modalImg.onerror = () => { modalImg.src = fallbackSrc; };
+      modalImg.src = coverSrc;
+      document.getElementById("modalTitle").textContent = item.title;
+      document.getElementById("modalMeta").innerHTML = `
+        <span>${item.source || "சர்வநிச்சயம் செய்திகள்"}</span>
+        <span>${formatItemDate(item)}</span>
+      `;
+      document.getElementById("modalBody").textContent = fullText;
+
+      const footer = document.getElementById("modalFooter");
+      footer.innerHTML = `
+        <div class="action-group">
+          <button type="button" class="btn btn-wa" id="mWaBtn">WhatsApp</button>
+          <button type="button" class="btn btn-fb" id="mFbBtn">Facebook</button>
+        </div>
+        <button type="button" class="btn" id="mCloseBtn">மூடு</button>
+      `;
+      footer.querySelector("#mWaBtn").onclick = () => shareWhatsApp(item);
+      footer.querySelector("#mFbBtn").onclick = () => shareFacebook(item);
+      footer.querySelector("#mCloseBtn").onclick = () => {
+        document.getElementById("articleModal").classList.remove("open");
+      };
+
+      document.getElementById("articleModal").classList.add("open");
+    }
+
+    document.getElementById("closeModalBtn").onclick = () => {
+      document.getElementById("articleModal").classList.remove("open");
+    };
+    document.getElementById("articleModal").onclick = (e) => {
+      if (e.target.id === "articleModal") {
+        e.currentTarget.classList.remove("open");
+      }
+    };
+
+    function renderFilteredNews() {
+      const grid = document.getElementById("newsGrid");
+      const countPill = document.getElementById("countPill");
+      const likesMap = getLikes();
+
+      const filtered = allNews.filter((item) => {
+        const matchCat =
+          selectedCategory === "அனைத்தும்" ||
+          (item.category && item.category.includes(selectedCategory));
+        const q = searchQuery.trim().toLowerCase();
+        const matchSearch =
+          !q ||
+          (item.title && item.title.toLowerCase().includes(q)) ||
+          (item.description && item.description.toLowerCase().includes(q));
+        return matchCat && matchSearch;
+      });
+
+      countPill.textContent = `${filtered.length} செய்திகள்`;
+
+      const breakingItem = filtered.find((n) => n.breaking) || filtered[0];
+      if (breakingItem) {
+        document.getElementById("breakingText").textContent = breakingItem.title;
+      }
+
+      grid.innerHTML = "";
+      filtered.forEach((item, index) => {
+        const id = item.id || `item-${index}`;
+        const isLiked = !!likesMap[id];
+        const likeCount = (Number(item.likes) || 10) + (isLiked ? 1 : 0);
+        const { primary: coverSrc, fallback: fallbackSrc } = getCardImage(item);
+        const fullText = (item.description || item.title || "").trim();
+        const dateLabel = formatItemDate(item);
+
+        const card = document.createElement("article");
+        card.className = "news-card";
+        card.innerHTML = `
+          <div>
+            <div class="news-thumb">
+              <img src="${coverSrc}" alt="${item.title}" />
+              <span class="badge">${item.category || "தமிழ் மரபு"}</span>
+            </div>
+            <div class="news-content">
+              <div class="news-meta">
+                <span>${item.source || "சர்வநிச்சயம் செய்திகள்"}</span>
+                <span>${dateLabel}</span>
+              </div>
+              <h3 class="news-title">${item.title}</h3>
+              <div class="news-preview">${fullText}</div>
+              <button type="button" class="read-more-btn">முழுச் செய்தி படிக்க →</button>
+            </div>
+          </div>
+
+          <div class="news-footer">
+            <div class="action-group">
+              <button type="button" class="btn like-btn ${isLiked ? "liked" : ""}">
+                <span>${isLiked ? "❤️" : "🤍"}</span>
+                <span>${likeCount}</span>
+              </button>
+              <button type="button" class="btn btn-wa wa-btn">WA</button>
+              <button type="button" class="btn btn-fb fb-btn">FB</button>
+            </div>
+            <button type="button" class="btn open-btn">படி</button>
+          </div>
+        `;
+
+        const imgEl = card.querySelector(".news-thumb img");
+        imgEl.onerror = () => { imgEl.src = fallbackSrc; };
+
+        card.querySelector(".like-btn").onclick = () => {
+          const map = getLikes();
+          if (map[id]) delete map[id];
+          else map[id] = true;
+          saveLikes(map);
+          renderFilteredNews();
+        };
+
+        card.querySelector(".wa-btn").onclick = () => shareWhatsApp(item);
+        card.querySelector(".fb-btn").onclick = () => shareFacebook(item);
+
+        const openModal = () => openArticleModal(item, coverSrc, fallbackSrc, fullText);
+        card.querySelector(".news-thumb").onclick = openModal;
+        card.querySelector(".news-title").onclick = openModal;
+        card.querySelector(".read-more-btn").onclick = openModal;
+        card.querySelector(".open-btn").onclick = openModal;
+
+        grid.appendChild(card);
+      });
+    }
+
+    document.querySelectorAll(".cat-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".cat-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedCategory = btn.dataset.cat;
+        renderFilteredNews();
+      });
+    });
+
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderFilteredNews();
+    });
+
+    async function init() {
+      try {
+        const res = await fetch("news.json?v=" + Date.now());
+        if (!res.ok) throw new Error("Network response was not ok");
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.articles || []);
+        allNews = list.length > 0 ? list : FALLBACK_NEWS;
+      } catch (e) {
+        allNews = FALLBACK_NEWS;
+      }
+      renderFilteredNews();
+    }
+
+    init();
+  </script>
+</body>
+</html>
 
