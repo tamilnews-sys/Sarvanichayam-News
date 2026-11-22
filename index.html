@@ -169,31 +169,15 @@
     .hero-banner {
       border-radius: 18px;
       overflow: hidden;
-      background: linear-gradient(125deg, #450a0a, #7c2d12, #78350f);
-      color: #fffbeb;
-      padding: 28px 22px;
       margin-bottom: 16px;
-      text-align: center;
       box-shadow: 0 10px 24px rgba(28, 25, 23, 0.16);
+      background: #450a0a;
     }
 
-    .hero-main-title {
-      font-size: 1.75rem;
-      font-weight: 900;
-      letter-spacing: 0.4px;
-    }
-
-    .hero-tagline {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fde68a;
-      margin-top: 6px;
-    }
-
-    .hero-cats {
-      margin-top: 10px;
-      font-size: 0.84rem;
-      color: #fed7aa;
+    .hero-banner img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
 
     .cat-list {
@@ -357,7 +341,7 @@
 
     .action-group {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -365,14 +349,14 @@
       border: 1px solid var(--border);
       background: var(--card);
       color: var(--text);
-      padding: 6px 11px;
+      padding: 6px 12px;
       border-radius: 8px;
       font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       text-decoration: none;
     }
 
@@ -380,18 +364,6 @@
       background: #fee2e2;
       border-color: #f87171;
       color: #dc2626;
-    }
-
-    .btn-wa {
-      background: #16a34a;
-      color: #fff;
-      border-color: #16a34a;
-    }
-
-    .btn-fb {
-      background: #1d4ed8;
-      color: #fff;
-      border-color: #1d4ed8;
     }
 
     .modal-backdrop {
@@ -489,9 +461,7 @@
     </div>
 
     <section class="hero-banner">
-      <div class="hero-main-title">சர்வநிச்சயம் செய்திகள்</div>
-      <div class="hero-tagline">தமிழ் கலாச்சாரமும் பண்பாடும் காக்கும் செய்தித் தளம்</div>
-      <div class="hero-cats">தமிழ்ப் பண்பாடு · கலாச்சாரம் & மரபு · இலங்கைத் தமிழர் · தமிழகம் · இலக்கியம் & கலை</div>
+      <img src="cover.jpg" alt="சர்வநிச்சயம் செய்திகள் — தமிழ் கலாச்சாரமும் பண்பாடும் காக்கும் செய்தித் தளம்" />
     </section>
 
     <div class="cat-list" id="catList">
@@ -682,14 +652,37 @@
       localStorage.setItem("sarvanichayam_likes_v1", JSON.stringify(likes));
     }
 
-    function shareWhatsApp(item) {
-      const msg = encodeURIComponent(`${item.title}\n\n${item.description || ""}\n\n${window.location.href}`);
-      window.open(`https://wa.me/?text=${msg}`, "_blank", "noopener");
-    }
+    async function shareNewsItem(item, btnEl) {
+      const shareText = `${item.title}\n\n${item.description || ""}`;
+      const shareUrl = window.location.href;
 
-    function shareFacebook(item) {
-      const url = encodeURIComponent(window.location.href);
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank", "noopener");
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: item.title || "சர்வநிச்சயம் செய்திகள்",
+            text: shareText,
+            url: shareUrl
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+
+      const fullPayload = `${shareText}\n\n${shareUrl}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(fullPayload);
+          if (btnEl) {
+            const oldText = btnEl.textContent;
+            btnEl.textContent = "✓ Copy ஆனது";
+            setTimeout(() => { btnEl.textContent = oldText; }, 1600);
+          }
+          return;
+        } catch {}
+      }
+
+      prompt("இணைப்பை Copy செய்யவும்:", shareUrl);
     }
 
     function openArticleModal(item, coverSrc, fallbackSrc, fullText) {
@@ -707,13 +700,12 @@
       const footer = document.getElementById("modalFooter");
       footer.innerHTML = `
         <div class="action-group">
-          <button type="button" class="btn btn-wa" id="mWaBtn">WhatsApp</button>
-          <button type="button" class="btn btn-fb" id="mFbBtn">Facebook</button>
+          <button type="button" class="btn" id="mShareBtn">🔗 Share</button>
         </div>
         <button type="button" class="btn" id="mCloseBtn">மூடு</button>
       `;
-      footer.querySelector("#mWaBtn").onclick = () => shareWhatsApp(item);
-      footer.querySelector("#mFbBtn").onclick = () => shareFacebook(item);
+      const mShareBtn = footer.querySelector("#mShareBtn");
+      mShareBtn.onclick = () => shareNewsItem(item, mShareBtn);
       footer.querySelector("#mCloseBtn").onclick = () => {
         document.getElementById("articleModal").classList.remove("open");
       };
@@ -788,8 +780,7 @@
                 <span>${isLiked ? "❤️" : "🤍"}</span>
                 <span>${likeCount}</span>
               </button>
-              <button type="button" class="btn btn-wa wa-btn">WA</button>
-              <button type="button" class="btn btn-fb fb-btn">FB</button>
+              <button type="button" class="btn share-btn">🔗 Share</button>
             </div>
             <button type="button" class="btn open-btn">படி</button>
           </div>
@@ -806,8 +797,8 @@
           renderFilteredNews();
         };
 
-        card.querySelector(".wa-btn").onclick = () => shareWhatsApp(item);
-        card.querySelector(".fb-btn").onclick = () => shareFacebook(item);
+        const shareBtn = card.querySelector(".share-btn");
+        shareBtn.onclick = () => shareNewsItem(item, shareBtn);
 
         const openModal = () => openArticleModal(item, coverSrc, fallbackSrc, fullText);
         card.querySelector(".news-thumb").onclick = openModal;
@@ -850,4 +841,3 @@
   </script>
 </body>
 </html>
-
