@@ -16,13 +16,20 @@
     }
     input:focus, select:focus, textarea:focus { border-color: #991b1b; }
     textarea { min-height: 150px; resize: vertical; line-height: 1.7; }
+    .preview-box { margin-top: 10px; display: none; }
+    .preview-box.show { display: block; }
+    .preview-box img { max-width: 100%; max-height: 200px; border-radius: 10px; border: 1px solid #d6d3d1; object-fit: cover; }
     .checkbox-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
     .checkbox-row input { width: 18px; height: 18px; }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
     button {
-      width: 100%; margin-top: 20px; padding: 14px; background: #991b1b; color: #fff;
+      width: 100%; padding: 14px; background: #991b1b; color: #fff;
       border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer;
     }
     button:disabled { background: #a8a29e; cursor: not-allowed; }
+    .cancel-btn {
+      width: auto; padding: 14px 18px; background: #78716c; font-size: 14px; display: none;
+    }
     .settings-box {
       background: #fafaf9; border: 1px solid #e7e5e4; padding: 12px; border-radius: 12px; margin-bottom: 16px;
     }
@@ -37,6 +44,10 @@
     }
     .news-item-title { font-size: 14px; font-weight: 700; }
     .news-item-cat { font-size: 12px; color: #991b1b; font-weight: 600; }
+    .item-btns { display: flex; gap: 6px; flex-shrink: 0; }
+    .edit-btn {
+      width: auto; margin: 0; padding: 6px 12px; background: #b45309; font-size: 12px; border-radius: 8px;
+    }
     .del-btn {
       width: auto; margin: 0; padding: 6px 12px; background: #dc2626; font-size: 12px; border-radius: 8px;
     }
@@ -44,7 +55,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="topBox">
     <a href="index.html" class="top-link">← செய்தித் தளத்தைப் பார்க்க</a>
     <h1>சர்வநிச்சயம் செய்திகள் — செய்தி பதிவேற்றம்</h1>
 
@@ -57,6 +68,8 @@
       <label>கோப்புப் பெயர்</label>
       <input type="text" id="ghPath" value="news.json" />
     </div>
+
+    <input type="hidden" id="editIndex" value="-1" />
 
     <label>பிரிவு</label>
     <select id="category">
@@ -73,15 +86,24 @@
     <label>முழுச் செய்தி / விவரம்</label>
     <textarea id="description" placeholder="நீங்கள் எழுத விரும்பும் முழுச் செய்தி அல்லது பண்பாட்டுக் கட்டுரையை இங்கே எழுதவும்..."></textarea>
 
+    <label>புகைப்படம் Upload செய்ய (விரும்பினால்)</label>
+    <input type="file" id="photoFile" accept="image/*" />
+    <div class="preview-box" id="previewBox">
+      <img id="previewImg" src="" alt="பட முன்னோட்டம்" />
+    </div>
+
     <label>படம் இணைப்பு (Image URL - விருப்பப்பட்டால்)</label>
-    <input type="url" id="image" placeholder="https://example.com/culture-photo.jpg" />
+    <input type="text" id="image" placeholder="images/photo.jpg அல்லது https://example.com/culture-photo.jpg" />
 
     <div class="checkbox-row">
       <input type="checkbox" id="breaking" />
       <label for="breaking" style="margin:0;">சிறப்புச் செய்தியாகக் காட்டு</label>
     </div>
 
-    <button id="publishBtn" onclick="publishNews()">செய்தியை வெளியிடு</button>
+    <div class="btn-row">
+      <button id="publishBtn" onclick="publishNews()">செய்தியை வெளியிடு</button>
+      <button type="button" class="cancel-btn" id="cancelEditBtn" onclick="cancelEdit()">ரத்து</button>
+    </div>
     <div id="statusBox" class="status"></div>
 
     <div class="news-list">
@@ -94,166 +116,34 @@
     const tokenInput = document.getElementById('ghToken');
     const repoInput = document.getElementById('ghRepo');
     const pathInput = document.getElementById('ghPath');
+    const photoFileInput = document.getElementById('photoFile');
+    const imageInput = document.getElementById('image');
+    const previewBox = document.getElementById('previewBox');
+    const previewImg = document.getElementById('previewImg');
     const statusBox = document.getElementById('statusBox');
+    const publishBtn = document.getElementById('publishBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
 
     tokenInput.value = localStorage.getItem('sn_token') || '';
     repoInput.value = localStorage.getItem('sn_repo') || 'tamilnews-sys/Sarvanichayam-News';
     pathInput.value = localStorage.getItem('sn_path') || 'news.json';
+
+    let selectedImageBase64 = null;
+    let selectedImagePath = null;
 
     function showStatus(msg, isError = false) {
       statusBox.textContent = msg;
       statusBox.className = 'status ' + (isError ? 'error' : 'success');
     }
 
-    function toBase64(str) {
-      return btoa(unescape(encodeURIComponent(str)));
-    }
-    function fromBase64(b64) {
-      return decodeURIComponent(escape(atob(b64)));
-    }
-
-    async function fetchNewsFile() {
-      const token = tokenInput.value.trim();
-      const repo = repoInput.value.trim();
-      const path = pathInput.value.trim() || 'news.json';
-
-      if (!repo) return { sha: null, articles: [] };
-
-      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
-        headers: token ? { Authorization: `token ${token}` } : {}
-      });
-
-      if (res.status === 404) {
-        return { sha: null, articles: [] };
-      }
-      if (!res.ok) {
-        throw new Error('GitHub கோப்பைப் பெற முடியவில்லை. Token மற்றும் Repository பெயரைச் சரிபார்க்கவும்.');
-      }
-
-      const data = await res.json();
-      const decoded = JSON.parse(fromBase64(data.content.replace(/\n/g, '')));
-      const articles = Array.isArray(decoded) ? decoded : (decoded.articles || []);
-      return { sha: data.sha, articles };
-    }
-
-    async function saveNewsFile(articles, sha, commitMsg) {
-      const token = tokenInput.value.trim();
-      const repo = repoInput.value.trim();
-      const path = pathInput.value.trim() || 'news.json';
-
-      const body = {
-        message: commitMsg,
-        content: toBase64(JSON.stringify(articles, null, 2))
-      };
-      if (sha) body.sha = sha;
-
-      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `token ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'சேமிப்பதில் பிழை ஏற்பட்டது.');
+    function updatePreview(src) {
+      if (src && src.trim()) {
+        previewImg.src = src.trim();
+        previewBox.classList.add('show');
+      } else {
+        previewImg.src = '';
+        previewBox.classList.remove('show');
       }
     }
 
-    async function publishNews() {
-      const token = tokenInput.value.trim();
-      const repo = repoInput.value.trim();
-      const path = pathInput.value.trim() || 'news.json';
-      const category = document.getElementById('category').value;
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const image = document.getElementById('image').value.trim();
-      const breaking = document.getElementById('breaking').checked;
-
-      if (!token) return showStatus('தயவுசெய்து GitHub Token உள்ளிடவும்.', true);
-      if (!repo) return showStatus('தயவுசெய்து Repository பெயரை உள்ளிடவும்.', true);
-      if (!title) return showStatus('செய்தித் தலைப்பை உள்ளிடவும்.', true);
-
-      localStorage.setItem('sn_token', token);
-      localStorage.setItem('sn_repo', repo);
-      localStorage.setItem('sn_path', path);
-
-      const btn = document.getElementById('publishBtn');
-      btn.disabled = true;
-      btn.textContent = 'வெளியிடப்படுகிறது...';
-
-      try {
-        const { sha, articles } = await fetchNewsFile();
-
-        const newArticle = {
-          id: Date.now().toString(),
-          title: title,
-          description: description || title,
-          category: category,
-          image: image || '',
-          breaking: breaking,
-          source: 'சர்வநிச்சயம் செய்திகள்',
-          publishedAt: new Date().toISOString()
-        };
-
-        articles.unshift(newArticle);
-
-        await saveNewsFile(articles, sha, `Publish: ${title.slice(0, 35)}`);
-
-        document.getElementById('title').value = '';
-        document.getElementById('description').value = '';
-        document.getElementById('image').value = '';
-        document.getElementById('breaking').checked = false;
-
-        showStatus('செய்தி வெற்றிகரமாக வெளியிடப்பட்டது! சிறிது நேரத்தில் தளத்தில் தோன்றும்.');
-        renderNewsList(articles);
-      } catch (e) {
-        showStatus(e.message, true);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'செய்தியை வெளியிடு';
-      }
-    }
-
-    async function deleteNews(index) {
-      if (!confirm('இந்தச் செய்தியை நீக்க வேண்டுமா?')) return;
-      try {
-        const { sha, articles } = await fetchNewsFile();
-        articles.splice(index, 1);
-        await saveNewsFile(articles, sha, 'Delete news item');
-        showStatus('செய்தி நீக்கப்பட்டது.');
-        renderNewsList(articles);
-      } catch (e) {
-        showStatus(e.message, true);
-      }
-    }
-
-    function renderNewsList(articles) {
-      const box = document.getElementById('existingNews');
-      if (!articles.length) {
-        box.innerHTML = '<div style="font-size:13px;color:#78716c;">செய்திகள் எதுவும் இல்லை.</div>';
-        return;
-      }
-      box.innerHTML = articles.slice(0, 20).map((item, idx) => `
-        <div class="news-item">
-          <div>
-            <div class="news-item-cat">${item.category || ''}</div>
-            <div class="news-item-title">${item.title}</div>
-          </div>
-          <button class="del-btn" onclick="deleteNews(${idx})">Delete</button>
-        </div>
-      `).join('');
-    }
-
-    fetchNewsFile()
-      .then(data => renderNewsList(data.articles))
-      .catch(() => {
-        document.getElementById('existingNews').innerHTML =
-          '<div style="font-size:13px;color:#78716c;">Token மற்றும் Repository உள்ளிட்டதும் செய்திகள் தெரியும்.</div>';
-      });
-  </script>
-</body>
-</html>
-
+    
