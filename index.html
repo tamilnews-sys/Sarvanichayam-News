@@ -3,841 +3,405 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>சர்வநிச்சயம் செய்திகள் — தமிழ் கலாச்சாரம் & பண்பாடு</title>
+  <title>சர்வநிச்சயம் செய்திகள் — செய்தி பதிவேற்றம்</title>
   <style>
-    :root {
-      --bg: #f6f4ef;
-      --card: #ffffff;
-      --text: #1c1917;
-      --muted: #44403c;
-      --primary: #991b1b;
-      --accent: #b45309;
-      --border: #e7e5e4;
+    * { box-sizing: border-box; font-family: "Noto Sans Tamil", system-ui, -apple-system, sans-serif; }
+    body { background: #f6f4ef; margin: 0; padding: 16px; color: #1c1917; }
+    .container { max-width: 620px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+    h1 { font-size: 20px; margin: 0 0 16px; color: #991b1b; text-align: center; }
+    label { display: block; font-size: 14px; font-weight: 700; margin: 12px 0 6px; }
+    input, select, textarea {
+      width: 100%; padding: 12px; border: 1px solid #d6d3d1; border-radius: 10px;
+      font-size: 15px; outline: none; background: #fff; color: #1c1917;
     }
-
-    body.dark {
-      --bg: #0c0a09;
-      --card: #1c1917;
-      --text: #fafaf9;
-      --muted: #d6d3d1;
-      --primary: #ef4444;
-      --accent: #f59e0b;
-      --border: #292524;
+    input:focus, select:focus, textarea:focus { border-color: #991b1b; }
+    textarea { min-height: 150px; resize: vertical; line-height: 1.7; }
+    .preview-box { margin-top: 10px; display: none; }
+    .preview-box.show { display: block; }
+    .preview-box img { max-width: 100%; max-height: 200px; border-radius: 10px; border: 1px solid #d6d3d1; object-fit: cover; }
+    .checkbox-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .checkbox-row input { width: 18px; height: 18px; }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    button {
+      width: 100%; padding: 14px; background: #991b1b; color: #fff;
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Noto Sans Tamil", system-ui, -apple-system, sans-serif;
+    button:disabled { background: #a8a29e; cursor: not-allowed; }
+    .cancel-btn {
+      width: auto; padding: 14px 18px; background: #78716c; font-size: 14px; display: none;
     }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      transition: background 0.2s, color 0.2s;
+    .settings-box {
+      background: #fafaf9; border: 1px solid #e7e5e4; padding: 12px; border-radius: 12px; margin-bottom: 16px;
     }
-
-    .top-strip {
-      background: #1c1917;
-      color: #fef3c7;
-      padding: 8px 14px;
-      font-size: 0.78rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
+    .settings-title { font-size: 13px; font-weight: 700; color: #57534e; margin-bottom: 8px; }
+    .status { margin-top: 14px; padding: 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .success { background: #dcfce7; color: #166534; display: block; }
+    .error { background: #fee2e2; color: #991b1b; display: block; }
+    .news-list { margin-top: 24px; border-top: 1px solid #e7e5e4; padding-top: 16px; }
+    .news-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px; border: 1px solid #e7e5e4; border-radius: 10px; margin-bottom: 8px; gap: 10px;
     }
-
-    .live-pill {
-      background: #991b1b;
-      color: #fef2f2;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-weight: 700;
+    .news-item-title { font-size: 14px; font-weight: 700; }
+    .news-item-cat { font-size: 12px; color: #991b1b; font-weight: 600; }
+    .item-btns { display: flex; gap: 6px; flex-shrink: 0; }
+    .edit-btn {
+      width: auto; margin: 0; padding: 6px 12px; background: #b45309; font-size: 12px; border-radius: 8px;
     }
-
-    .container {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 14px;
+    .del-btn {
+      width: auto; margin: 0; padding: 6px 12px; background: #dc2626; font-size: 12px; border-radius: 8px;
     }
-
-    .site-header {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .brand-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .brand-mark {
-      width: 46px;
-      height: 46px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #991b1b, #b45309);
-      color: #fffbeb;
-      font-weight: 800;
-      font-size: 1.15rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .brand-title {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-
-    .brand-sub {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .admin-link-btn {
-      background: var(--primary);
-      color: #fff;
-      text-decoration: none;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.82rem;
-    }
-
-    .theme-btn {
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-
-    .breaking-bar {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-      overflow: hidden;
-    }
-
-    .breaking-tag {
-      background: var(--primary);
-      color: #fff;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-
-    .breaking-text {
-      font-size: 0.88rem;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .hero-banner {
-      border-radius: 18px;
-      overflow: hidden;
-      margin-bottom: 16px;
-      box-shadow: 0 10px 24px rgba(28, 25, 23, 0.16);
-      background: #450a0a;
-    }
-
-    .hero-banner img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .cat-list {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 6px;
-      margin-bottom: 12px;
-    }
-
-    .cat-btn {
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 8px 15px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .cat-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-    }
-
-    .search-box {
-      width: 100%;
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 0.92rem;
-      margin-bottom: 18px;
-      outline: none;
-    }
-
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .section-title {
-      font-size: 1.3rem;
-      font-weight: 800;
-    }
-
-    .count-pill {
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
-    .news-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-      gap: 20px;
-    }
-
-    .news-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .news-thumb {
-      position: relative;
-      width: 100%;
-      height: 195px;
-      background: #292524;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .news-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(28, 25, 23, 0.88);
-      color: #fef3c7;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      border: 1px solid rgba(254, 243, 199, 0.25);
-    }
-
-    .news-content {
-      padding: 16px;
-    }
-
-    .news-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.78rem;
-      color: #78716c;
-      margin-bottom: 8px;
-      gap: 8px;
-    }
-
-    .news-title {
-      font-size: 1.06rem;
-      font-weight: 700;
-      line-height: 1.5;
-      margin-bottom: 10px;
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    .news-preview {
-      font-size: 0.9rem;
-      color: var(--muted);
-      line-height: 1.75;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .read-more-btn {
-      margin-top: 10px;
-      background: none;
-      border: none;
-      color: var(--primary);
-      font-weight: 700;
-      font-size: 0.86rem;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .news-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-      background: rgba(120, 113, 108, 0.06);
-    }
-
-    .action-group {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      text-decoration: none;
-    }
-
-    .btn.liked {
-      background: #fee2e2;
-      border-color: #f87171;
-      color: #dc2626;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(12, 10, 9, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 999;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
-    .modal-box {
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      max-width: 720px;
-      width: 100%;
-      max-height: 88vh;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .modal-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .close-btn {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .modal-img {
-      width: 100%;
-      max-height: 280px;
-      object-fit: cover;
-      border-radius: 12px;
-      margin-bottom: 14px;
-    }
-
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      line-height: 1.5;
-      margin-bottom: 10px;
-    }
-
-    .modal-body {
-      font-size: 0.96rem;
-      color: var(--muted);
-      line-height: 1.9;
-      white-space: pre-line;
-      margin-bottom: 16px;
-    }
+    .top-link { display: inline-block; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: #991b1b; text-decoration: none; }
   </style>
 </head>
 <body>
-  <div class="top-strip">
-    <span class="live-pill">● சர்வநிச்சயம் செய்திகள்</span>
-    <span id="liveClock"></span>
-  </div>
+  <div class="container" id="topBox">
+    <a href="index.html" class="top-link">← செய்தித் தளத்தைப் பார்க்க</a>
+    <h1>சர்வநிச்சயம் செய்திகள் — செய்தி பதிவேற்றம்</h1>
 
-  <div class="container">
-    <header class="site-header">
-      <div class="brand-left">
-        <div class="brand-mark">ச</div>
-        <div>
-          <div class="brand-title">சர்வநிச்சயம் செய்திகள்</div>
-          <div class="brand-sub">தமிழ் கலாச்சாரம் · பண்பாடு · மரபு · செய்திகள்</div>
-        </div>
-      </div>
-      <div class="header-actions">
-        <a href="admin.html" class="admin-link-btn">✍️ செய்தி போட</a>
-        <button type="button" class="theme-btn" id="themeBtn">🌙 இரவு</button>
-      </div>
-    </header>
-
-    <div class="breaking-bar">
-      <span class="breaking-tag">சிறப்புச் செய்தி</span>
-      <div class="breaking-text" id="breakingText">தமிழ்ப் பண்பாடு, மரபு மற்றும் சமகாலச் செய்திகள்</div>
+    <div class="settings-box">
+      <div class="settings-title">⚙️ GitHub இணைப்பு (ஒருமுறை சேமித்தால் போதும்)</div>
+      <label>GitHub Token (PAT)</label>
+      <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" />
+      <label>Repository (உதாரணம்: tamilnews-sys/Sarvanichayam-News)</label>
+      <input type="text" id="ghRepo" placeholder="tamilnews-sys/Sarvanichayam-News" />
+      <label>கோப்புப் பெயர்</label>
+      <input type="text" id="ghPath" value="news.json" />
     </div>
 
-    <section class="hero-banner">
-      <img src="cover.jpg" alt="சர்வநிச்சயம் செய்திகள் — தமிழ் கலாச்சாரமும் பண்பாடும் காக்கும் செய்தித் தளம்" />
-    </section>
+    <input type="hidden" id="editIndex" value="-1" />
 
-    <div class="cat-list" id="catList">
-      <button type="button" class="cat-btn active" data-cat="அனைத்தும்">அனைத்தும்</button>
-      <button type="button" class="cat-btn" data-cat="தமிழ்ப் பண்பாடு">தமிழ்ப் பண்பாடு</button>
-      <button type="button" class="cat-btn" data-cat="கலாச்சாரம் & மரபு">கலாச்சாரம் & மரபு</button>
-      <button type="button" class="cat-btn" data-cat="இலங்கைத் தமிழர்">இலங்கைத் தமிழர்</button>
-      <button type="button" class="cat-btn" data-cat="தமிழகம்">தமிழகம்</button>
-      <button type="button" class="cat-btn" data-cat="இலக்கியம் & கலை">இலக்கியம் & கலை</button>
+    <label>பிரிவு</label>
+    <select id="category">
+      <option value="தமிழ்ப் பண்பாடு">தமிழ்ப் பண்பாடு</option>
+      <option value="கலாச்சாரம் & மரபு">கலாச்சாரம் & மரபு</option>
+      <option value="இலங்கைத் தமிழர்">இலங்கைத் தமிழர்</option>
+      <option value="தமிழகம்">தமிழகம்</option>
+      <option value="இலக்கியம் & கலை">இலக்கியம் & கலை</option>
+    </select>
+
+    <label>செய்தித் தலைப்பு</label>
+    <input type="text" id="title" placeholder="தமிழ் கலாச்சாரம் / பண்பாடு / செய்தித் தலைப்பு..." />
+
+    <label>முழுச் செய்தி / விவரம்</label>
+    <textarea id="description" placeholder="நீங்கள் எழுத விரும்பும் முழுச் செய்தி அல்லது பண்பாட்டுக் கட்டுரையை இங்கே எழுதவும்..."></textarea>
+
+    <label>புகைப்படம் Upload செய்ய (விரும்பினால்)</label>
+    <input type="file" id="photoFile" accept="image/*" />
+    <div class="preview-box" id="previewBox">
+      <img id="previewImg" src="" alt="பட முன்னோட்டம்" />
     </div>
 
-    <input
-      type="text"
-      id="searchInput"
-      class="search-box"
-      placeholder="🔍 தமிழ் கலாச்சாரம், பண்பாடு மற்றும் செய்திகளைத் தேடவும்..."
-    />
+    <label>படம் இணைப்பு (Image URL - விருப்பப்பட்டால்)</label>
+    <input type="text" id="image" placeholder="images/photo.jpg அல்லது https://example.com/culture-photo.jpg" />
 
-    <div class="section-head">
-      <h2 class="section-title">சமீபத்திய செய்திகள்</h2>
-      <span class="count-pill" id="countPill">0 செய்திகள்</span>
+    <div class="checkbox-row">
+      <input type="checkbox" id="breaking" />
+      <label for="breaking" style="margin:0;">சிறப்புச் செய்தியாகக் காட்டு</label>
     </div>
 
-    <div class="news-grid" id="newsGrid"></div>
-  </div>
+    <div class="btn-row">
+      <button id="publishBtn" onclick="publishNews()">செய்தியை வெளியிடு</button>
+      <button type="button" class="cancel-btn" id="cancelEditBtn" onclick="cancelEdit()">ரத்து</button>
+    </div>
+    <div id="statusBox" class="status"></div>
 
-  <div class="modal-backdrop" id="articleModal">
-    <div class="modal-box">
-      <div class="modal-top">
-        <span id="modalCategory" class="count-pill">செய்தி</span>
-        <button type="button" class="close-btn" id="closeModalBtn">✕ மூடு</button>
-      </div>
-      <img id="modalImg" class="modal-img" src="" alt="" />
-      <h2 id="modalTitle" class="modal-title"></h2>
-      <div id="modalMeta" class="news-meta"></div>
-      <div id="modalBody" class="modal-body"></div>
-      <div class="news-footer" id="modalFooter"></div>
+    <div class="news-list">
+      <div class="settings-title">📋 வெளியிடப்பட்ட செய்திகள்</div>
+      <div id="existingNews">ஏற்றப்படுகிறது...</div>
     </div>
   </div>
 
   <script>
-    const FALLBACK_NEWS = [
-      {
-        id: "sn-1",
-        title: "தமிழ் மரபுப் பண்பாடும் வாழ்வியல் விழுமியங்களும்",
-        description: "விருந்தோம்பல், குடும்ப ஒற்றுமை, இயற்கையோடு இணைந்த வாழ்க்கை முறை ஆகியவை தமிழ் பண்பாட்டின் அடித்தளமாகத் திகழ்கின்றன. தலைமுறை தலைமுறையாகக் காக்கப்படும் இம்மரபுகள் இன்றைய வாழ்விலும் வழிகாட்டியாக உள்ளன.",
-        category: "தமிழ்ப் பண்பாடு",
-        source: "சர்வநிச்சயம் செய்திகள்",
-        date: "இன்று",
-        likes: 24
-      },
-      {
-        id: "sn-2",
-        title: "பண்டைய கலை வடிவங்களும் பாரம்பரிய விழாக்களும்",
-        description: "கூத்து, பரதம், நாட்டுப்புறக் கலைகள் மற்றும் பாரம்பரிய விழாக்கள் தமிழர் கலாச்சாரத்தின் உயிர்த்துடிப்பை வெளிப்படுத்துகின்றன. இளைய தலைமுறையினரிடம் இவற்றை எடுத்துச் செல்வது காலத்தின் தேவையாக உள்ளது.",
-        category: "கலாச்சாரம் & மரபு",
-        source: "சர்வநிச்சயம் செய்திகள்",
-        date: "இன்று",
-        likes: 19
-      },
-      {
-        id: "sn-3",
-        title: "தமிழ் இலக்கியமும் நீதி நெறிகளும் காட்டும் வாழ்வு வழி",
-        description: "சங்க இலக்கியங்களும் திருக்குறள் உள்ளிட்ட நீதி நூல்களும் மனித நேயம், அறம், ஒழுக்கம் ஆகியவற்றை எளிய முறையில் உணர்த்துகின்றன.",
-        category: "இலக்கியம் & கலை",
-        source: "சர்வநிச்சயம் செய்திகள்",
-        date: "இன்று",
-        likes: 22
-      }
-    ];
+    const tokenInput = document.getElementById('ghToken');
+    const repoInput = document.getElementById('ghRepo');
+    const pathInput = document.getElementById('ghPath');
+    const photoFileInput = document.getElementById('photoFile');
+    const imageInput = document.getElementById('image');
+    const previewBox = document.getElementById('previewBox');
+    const previewImg = document.getElementById('previewImg');
+    const statusBox = document.getElementById('statusBox');
+    const publishBtn = document.getElementById('publishBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-    let allNews = [];
-    let selectedCategory = "அனைத்தும்";
-    let searchQuery = "";
-    const coverCache = {};
+    tokenInput.value = localStorage.getItem('sn_token') || '';
+    repoInput.value = localStorage.getItem('sn_repo') || 'tamilnews-sys/Sarvanichayam-News';
+    pathInput.value = localStorage.getItem('sn_path') || 'news.json';
 
-    function updateClock() {
-      const now = new Date();
-      document.getElementById("liveClock").textContent = now.toLocaleString("ta-IN", {
-        weekday: "short",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+    let selectedImageBase64 = null;
+    let selectedImagePath = null;
+
+    function showStatus(msg, isError = false) {
+      statusBox.textContent = msg;
+      statusBox.className = 'status ' + (isError ? 'error' : 'success');
     }
-    updateClock();
-    setInterval(updateClock, 30000);
 
-    const themeBtn = document.getElementById("themeBtn");
-    themeBtn.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-      const isDark = document.body.classList.contains("dark");
-      themeBtn.textContent = isDark ? "☀️ பகல்" : "🌙 இரவு";
+    function updatePreview(src) {
+      if (src && src.trim()) {
+        previewImg.src = src.trim();
+        previewBox.classList.add('show');
+      } else {
+        previewImg.src = '';
+        previewBox.classList.remove('show');
+      }
+    }
+
+    imageInput.addEventListener('input', () => {
+      if (!selectedImageBase64) {
+        updatePreview(imageInput.value);
+      }
     });
 
-    function formatItemDate(item) {
-      if (item.date) return item.date;
-      if (item.publishedAt) {
-        const d = new Date(item.publishedAt);
-        if (!isNaN(d.getTime())) {
-          return d.toLocaleDateString("ta-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-          });
-        }
+    photoFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        selectedImageBase64 = null;
+        selectedImagePath = null;
+        updatePreview(imageInput.value);
+        return;
       }
-      return "இன்று";
-    }
-
-    function generateNewsCover(title = "", category = "சர்வநிச்சயம்") {
-      const cacheKey = `${category}__${title}`;
-      if (coverCache[cacheKey]) return coverCache[cacheKey];
-
-      const canvas = document.createElement("canvas");
-      canvas.width = 800;
-      canvas.height = 420;
-      const ctx = canvas.getContext("2d");
-
-      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      grad.addColorStop(0, "#450a0a");
-      grad.addColorStop(1, "#92400e");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "rgba(254, 243, 199, 0.08)";
-      ctx.beginPath();
-      ctx.arc(690, 85, 130, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 22px sans-serif";
-      ctx.fillText(`சர்வநிச்சயம் செய்திகள்  •  ${category || "தமிழ் மரபு"}`, 42, 68);
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 34px 'Noto Sans Tamil', sans-serif";
-
-      const words = (title || "சமீபத்திய செய்தி").split(" ");
-      const lines = [];
-      let currentLine = "";
-      for (let i = 0; i < words.length; i++) {
-        const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
-        if (ctx.measureText(testLine).width > 710 && currentLine) {
-          lines.push(currentLine);
-          currentLine = words[i];
-        } else {
-          currentLine = testLine;
-        }
-      }
-      if (currentLine) lines.push(currentLine);
-
-      const visibleLines = lines.slice(0, 4);
-      if (lines.length > 4) visibleLines[3] = visibleLines[3] + "...";
-
-      let y = 135;
-      visibleLines.forEach((line) => {
-        ctx.fillText(line, 42, y);
-        y += 48;
-      });
-
-      ctx.fillStyle = "#fbbf24";
-      ctx.fillRect(42, 365, 160, 6);
-
-      const dataUrl = canvas.toDataURL("image/png");
-      coverCache[cacheKey] = dataUrl;
-      return dataUrl;
-    }
-
-    function getCardImage(item) {
-      const generated = generateNewsCover(item.title, item.category);
-      if (item.image && item.image.trim()) {
-        return { primary: item.image.trim(), fallback: generated };
-      }
-      return { primary: generated, fallback: generated };
-    }
-
-    function getLikes() {
-      try {
-        return JSON.parse(localStorage.getItem("sarvanichayam_likes_v1") || "{}");
-      } catch {
-        return {};
-      }
-    }
-
-    function saveLikes(likes) {
-      localStorage.setItem("sarvanichayam_likes_v1", JSON.stringify(likes));
-    }
-
-    async function shareNewsItem(item, btnEl) {
-      const shareText = `${item.title}\n\n${item.description || ""}`;
-      const shareUrl = window.location.href;
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: item.title || "சர்வநிச்சயம் செய்திகள்",
-            text: shareText,
-            url: shareUrl
-          });
-          return;
-        } catch (err) {
-          if (err && err.name === "AbortError") return;
-        }
-      }
-
-      const fullPayload = `${shareText}\n\n${shareUrl}`;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        try {
-          await navigator.clipboard.writeText(fullPayload);
-          if (btnEl) {
-            const oldText = btnEl.textContent;
-            btnEl.textContent = "✓ Copy ஆனது";
-            setTimeout(() => { btnEl.textContent = oldText; }, 1600);
-          }
-          return;
-        } catch {}
-      }
-
-      prompt("இணைப்பை Copy செய்யவும்:", shareUrl);
-    }
-
-    function openArticleModal(item, coverSrc, fallbackSrc, fullText) {
-      document.getElementById("modalCategory").textContent = item.category || "செய்திகள்";
-      const modalImg = document.getElementById("modalImg");
-      modalImg.onerror = () => { modalImg.src = fallbackSrc; };
-      modalImg.src = coverSrc;
-      document.getElementById("modalTitle").textContent = item.title;
-      document.getElementById("modalMeta").innerHTML = `
-        <span>${item.source || "சர்வநிச்சயம் செய்திகள்"}</span>
-        <span>${formatItemDate(item)}</span>
-      `;
-      document.getElementById("modalBody").textContent = fullText;
-
-      const footer = document.getElementById("modalFooter");
-      footer.innerHTML = `
-        <div class="action-group">
-          <button type="button" class="btn" id="mShareBtn">🔗 Share</button>
-        </div>
-        <button type="button" class="btn" id="mCloseBtn">மூடு</button>
-      `;
-      const mShareBtn = footer.querySelector("#mShareBtn");
-      mShareBtn.onclick = () => shareNewsItem(item, mShareBtn);
-      footer.querySelector("#mCloseBtn").onclick = () => {
-        document.getElementById("articleModal").classList.remove("open");
+      const reader = new FileReader();
+      reader.onload = () => {
+        const res = String(reader.result || '');
+        selectedImageBase64 = res.split(',')[1] || '';
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        selectedImagePath = `images/${Date.now()}_${cleanName}`;
+        imageInput.value = selectedImagePath;
+        updatePreview(res);
       };
-
-      document.getElementById("articleModal").classList.add("open");
-    }
-
-    document.getElementById("closeModalBtn").onclick = () => {
-      document.getElementById("articleModal").classList.remove("open");
-    };
-    document.getElementById("articleModal").onclick = (e) => {
-      if (e.target.id === "articleModal") {
-        e.currentTarget.classList.remove("open");
-      }
-    };
-
-    function renderFilteredNews() {
-      const grid = document.getElementById("newsGrid");
-      const countPill = document.getElementById("countPill");
-      const likesMap = getLikes();
-
-      const filtered = allNews.filter((item) => {
-        const matchCat =
-          selectedCategory === "அனைத்தும்" ||
-          (item.category && item.category.includes(selectedCategory));
-        const q = searchQuery.trim().toLowerCase();
-        const matchSearch =
-          !q ||
-          (item.title && item.title.toLowerCase().includes(q)) ||
-          (item.description && item.description.toLowerCase().includes(q));
-        return matchCat && matchSearch;
-      });
-
-      countPill.textContent = `${filtered.length} செய்திகள்`;
-
-      const breakingItem = filtered.find((n) => n.breaking) || filtered[0];
-      if (breakingItem) {
-        document.getElementById("breakingText").textContent = breakingItem.title;
-      }
-
-      grid.innerHTML = "";
-      filtered.forEach((item, index) => {
-        const id = item.id || `item-${index}`;
-        const isLiked = !!likesMap[id];
-        const likeCount = (Number(item.likes) || 10) + (isLiked ? 1 : 0);
-        const { primary: coverSrc, fallback: fallbackSrc } = getCardImage(item);
-        const fullText = (item.description || item.title || "").trim();
-        const dateLabel = formatItemDate(item);
-
-        const card = document.createElement("article");
-        card.className = "news-card";
-        card.innerHTML = `
-          <div>
-            <div class="news-thumb">
-              <img src="${coverSrc}" alt="${item.title}" />
-              <span class="badge">${item.category || "தமிழ் மரபு"}</span>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span>${item.source || "சர்வநிச்சயம் செய்திகள்"}</span>
-                <span>${dateLabel}</span>
-              </div>
-              <h3 class="news-title">${item.title}</h3>
-              <div class="news-preview">${fullText}</div>
-              <button type="button" class="read-more-btn">முழுச் செய்தி படிக்க →</button>
-            </div>
-          </div>
-
-          <div class="news-footer">
-            <div class="action-group">
-              <button type="button" class="btn like-btn ${isLiked ? "liked" : ""}">
-                <span>${isLiked ? "❤️" : "🤍"}</span>
-                <span>${likeCount}</span>
-              </button>
-              <button type="button" class="btn share-btn">🔗 Share</button>
-            </div>
-            <button type="button" class="btn open-btn">படி</button>
-          </div>
-        `;
-
-        const imgEl = card.querySelector(".news-thumb img");
-        imgEl.onerror = () => { imgEl.src = fallbackSrc; };
-
-        card.querySelector(".like-btn").onclick = () => {
-          const map = getLikes();
-          if (map[id]) delete map[id];
-          else map[id] = true;
-          saveLikes(map);
-          renderFilteredNews();
-        };
-
-        const shareBtn = card.querySelector(".share-btn");
-        shareBtn.onclick = () => shareNewsItem(item, shareBtn);
-
-        const openModal = () => openArticleModal(item, coverSrc, fallbackSrc, fullText);
-        card.querySelector(".news-thumb").onclick = openModal;
-        card.querySelector(".news-title").onclick = openModal;
-        card.querySelector(".read-more-btn").onclick = openModal;
-        card.querySelector(".open-btn").onclick = openModal;
-
-        grid.appendChild(card);
-      });
-    }
-
-    document.querySelectorAll(".cat-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".cat-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedCategory = btn.dataset.cat;
-        renderFilteredNews();
-      });
+      reader.readAsDataURL(file);
     });
 
-    document.getElementById("searchInput").addEventListener("input", (e) => {
-      searchQuery = e.target.value;
-      renderFilteredNews();
-    });
+    function toBase64(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+    function fromBase64(b64) {
+      return decodeURIComponent(escape(atob(b64)));
+    }
 
-    async function init() {
+    async function fetchNewsFile() {
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+      const path = pathInput.value.trim() || 'news.json';
+
+      if (!repo) return { sha: null, articles: [] };
+
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?t=${Date.now()}`, {
+        headers: token ? { Authorization: `token ${token}` } : {}
+      });
+
+      if (res.status === 404) {
+        return { sha: null, articles: [] };
+      }
+      if (!res.ok) {
+        throw new Error('GitHub கோப்பைப் பெற முடியவில்லை. Token மற்றும் Repository பெயரைச் சரிபார்க்கவும்.');
+      }
+
+      const data = await res.json();
+      const decoded = JSON.parse(fromBase64(data.content.replace(/\n/g, '')));
+      const articles = Array.isArray(decoded) ? decoded : (decoded.articles || []);
+      return { sha: data.sha, articles };
+    }
+
+    async function uploadImageToGitHub() {
+      if (!selectedImageBase64 || !selectedImagePath) {
+        return imageInput.value.trim();
+      }
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${selectedImagePath}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `Upload image ${selectedImagePath}`,
+          content: selectedImageBase64
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'புகைப்படத்தை Upload செய்வதில் பிழை ஏற்பட்டது.');
+      }
+
+      return selectedImagePath;
+    }
+
+    async function saveNewsFile(articles, sha, commitMsg) {
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+      const path = pathInput.value.trim() || 'news.json';
+
+      const body = {
+        message: commitMsg,
+        content: toBase64(JSON.stringify(articles, null, 2))
+      };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'சேமிப்பதில் பிழை ஏற்பட்டது.');
+      }
+    }
+
+    function cancelEdit() {
+      document.getElementById('editIndex').value = '-1';
+      document.getElementById('title').value = '';
+      document.getElementById('description').value = '';
+      imageInput.value = '';
+      photoFileInput.value = '';
+      document.getElementById('breaking').checked = false;
+      selectedImageBase64 = null;
+      selectedImagePath = null;
+      updatePreview('');
+      publishBtn.textContent = 'செய்தியை வெளியிடு';
+      cancelEditBtn.style.display = 'none';
+    }
+
+    async function startEdit(index) {
       try {
-        const res = await fetch("news.json?v=" + Date.now());
-        if (!res.ok) throw new Error("Network response was not ok");
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.articles || []);
-        allNews = list.length > 0 ? list : FALLBACK_NEWS;
+        const { articles } = await fetchNewsFile();
+        const item = articles[index];
+        if (!item) return;
+
+        document.getElementById('editIndex').value = String(index);
+        document.getElementById('category').value = item.category || 'தமிழ்ப் பண்பாடு';
+        document.getElementById('title').value = item.title || '';
+        document.getElementById('description').value = item.description || '';
+        imageInput.value = item.image || '';
+        photoFileInput.value = '';
+        document.getElementById('breaking').checked = !!item.breaking;
+
+        selectedImageBase64 = null;
+        selectedImagePath = null;
+        updatePreview(item.image || '');
+
+        publishBtn.textContent = 'மாற்றங்களைச் சேமி';
+        cancelEditBtn.style.display = 'inline-block';
+        document.getElementById('topBox').scrollIntoView({ behavior: 'smooth' });
       } catch (e) {
-        allNews = FALLBACK_NEWS;
+        showStatus(e.message, true);
       }
-      renderFilteredNews();
     }
 
-    init();
+    async function publishNews() {
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+      const path = pathInput.value.trim() || 'news.json';
+      const category = document.getElementById('category').value;
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const breaking = document.getElementById('breaking').checked;
+      const editIdx = parseInt(document.getElementById('editIndex').value, 10);
+
+      if (!token) return showStatus('தயவுசெய்து GitHub Token உள்ளிடவும்.', true);
+      if (!repo) return showStatus('தயவுசெய்து Repository பெயரை உள்ளிடவும்.', true);
+      if (!title) return showStatus('செய்தித் தலைப்பை உள்ளிடவும்.', true);
+
+      localStorage.setItem('sn_token', token);
+      localStorage.setItem('sn_repo', repo);
+      localStorage.setItem('sn_path', path);
+
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'சேமிக்கப்படுகிறது...';
+
+      try {
+        const finalImage = await uploadImageToGitHub();
+        const { sha, articles } = await fetchNewsFile();
+
+        if (editIdx >= 0 && articles[editIdx]) {
+          articles[editIdx] = {
+            ...articles[editIdx],
+            title: title,
+            description: description || title,
+            category: category,
+            image: finalImage || '',
+            breaking: breaking
+          };
+          await saveNewsFile(articles, sha, `Update: ${title.slice(0, 35)}`);
+          showStatus('செய்தி வெற்றிகரமாகத் திருத்தப்பட்டது!');
+        } else {
+          const newArticle = {
+            id: Date.now().toString(),
+            title: title,
+            description: description || title,
+            category: category,
+            image: finalImage || '',
+            breaking: breaking,
+            source: 'சர்வநிச்சயம் செய்திகள்',
+            publishedAt: new Date().toISOString()
+          };
+          articles.unshift(newArticle);
+          await saveNewsFile(articles, sha, `Publish: ${title.slice(0, 35)}`);
+          showStatus('செய்தி வெற்றிகரமாக வெளியிடப்பட்டது! சிறிது நேரத்தில் தளத்தில் தோன்றும்.');
+        }
+
+        cancelEdit();
+        renderNewsList(articles);
+      } catch (e) {
+        showStatus(e.message, true);
+      } finally {
+        publishBtn.disabled = false;
+        if (parseInt(document.getElementById('editIndex').value, 10) < 0) {
+          publishBtn.textContent = 'செய்தியை வெளியிடு';
+        }
+      }
+    }
+
+    async function deleteNews(index) {
+      if (!confirm('இந்தச் செய்தியை நீக்க வேண்டுமா?')) return;
+      try {
+        const { sha, articles } = await fetchNewsFile();
+        articles.splice(index, 1);
+        await saveNewsFile(articles, sha, 'Delete news item');
+        showStatus('செய்தி நீக்கப்பட்டது.');
+        if (parseInt(document.getElementById('editIndex').value, 10) === index) {
+          cancelEdit();
+        }
+        renderNewsList(articles);
+      } catch (e) {
+        showStatus(e.message, true);
+      }
+    }
+
+    function renderNewsList(articles) {
+      const box = document.getElementById('existingNews');
+      if (!articles.length) {
+        box.innerHTML = '<div style="font-size:13px;color:#78716c;">செய்திகள் எதுவும் இல்லை.</div>';
+        return;
+      }
+      box.innerHTML = articles.slice(0, 20).map((item, idx) => `
+        <div class="news-item">
+          <div>
+            <div class="news-item-cat">${item.category || ''} ${item.image ? '· 📷' : ''}</div>
+            <div class="news-item-title">${item.title}</div>
+          </div>
+          <div class="item-btns">
+            <button class="edit-btn" onclick="startEdit(${idx})">Edit</button>
+            <button class="del-btn" onclick="deleteNews(${idx})">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    fetchNewsFile()
+      .then(data => renderNewsList(data.articles))
+      .catch(() => {
+        document.getElementById('existingNews').innerHTML =
+          '<div style="font-size:13px;color:#78716c;">Token மற்றும் Repository உள்ளிட்டதும் செய்திகள் தெரியும்.</div>';
+      });
   </script>
 </body>
 </html>
