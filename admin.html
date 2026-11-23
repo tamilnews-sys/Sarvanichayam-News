@@ -146,4 +146,300 @@
       }
     }
 
-    
+    imageInput.addEventListener('input', () => {
+      if (!selectedImageBase64) {
+        updatePreview(imageInput.value);
+      }
+    });
+
+    photoFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        selectedImageBase64 = null;
+        selectedImagePath = null;
+        updatePreview(imageInput.value);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const res = String(reader.result || '');
+        selectedImageBase64 = res.split(',')[1] || '';
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        selectedImagePath = `images/${Date.now()}_${cleanName}`;
+        imageInput.value = selectedImagePath;
+        updatePreview(res);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function toBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) {
+        bin += String.fromCharCode(bytes[i]);
+      }
+      return btoa(bin);
+    }
+
+    function fromBase64(b64) {
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) {
+        bytes[i] = bin.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+
+    function getCleanPath() {
+      return (pathInput.value.trim() || 'news.json').replace(/^\/+/, '');
+    }
+
+    async function fetchNewsFile() {
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+      const path = getCleanPath();
+
+      if (!repo) return { sha: null, articles: [] };
+
+      const headers = { Accept: 'application/vnd.github+json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}?t=${Date.now()}`,
+        { headers, cache: 'no-store' }
+      );
+
+      if (res.status === 404) {
+        return { sha: null, articles: [] };
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'GitHub கோப்பைப் பெற முடியவில்லை. Token மற்றும் Repository பெயரைச் சரிபார்க்கவும்.');
+      }
+
+      const data = await res.json();
+      const decoded = JSON.parse(fromBase64(data.content.replace(/\n/g, '')));
+      const articles = Array.isArray(decoded) ? decoded : (decoded.articles || []);
+      return { sha: data.sha, articles };
+    }
+
+    async function uploadImageToGitHub() {
+      if (!selectedImageBase64 || !selectedImagePath) {
+        return imageInput.value.trim();
+      }
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+
+      const res = await fetch(
+        `https://api.github.com/repos/${repo}/contents/${selectedImagePath}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          cache: 'no-store',
+          body: JSON.stringify({
+            message: `Upload image ${selectedImagePath}`,
+            content: selectedImageBase64
+          })
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'புகைப்படத்தை Upload செய்வதில் பிழை ஏற்பட்டது.');
+      }
+
+      return selectedImagePath;
+    }
+
+    async function saveNewsFile(articles, sha, commitMsg) {
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+      const path = getCleanPath();
+
+      const body = {
+        message: commitMsg,
+        content: toBase64(JSON.stringify(articles, null, 2))
+      };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          cache: 'no-store',
+          body: JSON.stringify(body)
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'சேமிப்பதில் பிழை ஏற்பட்டது.');
+      }
+    }
+
+    function cancelEdit() {
+      document.getElementById('editIndex').value = '-1';
+      document.getElementById('title').value = '';
+      document.getElementById('description').value = '';
+      imageInput.value = '';
+      photoFileInput.value = '';
+      document.getElementById('breaking').checked = false;
+      selectedImageBase64 = null;
+      selectedImagePath = null;
+      updatePreview('');
+      publishBtn.textContent = 'செய்தியை வெளியிடு';
+      cancelEditBtn.style.display = 'none';
+    }
+
+    async function startEdit(index) {
+      try {
+        const { articles } = await fetchNewsFile();
+        const item = articles[index];
+        if (!item) return;
+
+        document.getElementById('editIndex').value = String(index);
+        document.getElementById('category').value = item.category || 'தமிழ்ப் பண்பாடு';
+        document.getElementById('title').value = item.title || '';
+        document.getElementById('description').value = item.description || '';
+        imageInput.value = item.image || '';
+        photoFileInput.value = '';
+        document.getElementById('breaking').checked = !!item.breaking;
+
+        selectedImageBase64 = null;
+        selectedImagePath = null;
+        updatePreview(item.image || '');
+
+        publishBtn.textContent = 'மாற்றங்களைச் சேமி';
+        cancelEditBtn.style.display = 'inline-block';
+        document.getElementById('topBox').scrollIntoView({ behavior: 'smooth' });
+      } catch (e) {
+        showStatus(e.message, true);
+      }
+    }
+
+    async function publishNews() {
+      const token = tokenInput.value.trim();
+      const repo = repoInput.value.trim();
+      const path = getCleanPath();
+      const category = document.getElementById('category').value;
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const breaking = document.getElementById('breaking').checked;
+      const editIdx = parseInt(document.getElementById('editIndex').value, 10);
+
+      if (!token) return showStatus('தயவுசெய்து GitHub Token உள்ளிடவும்.', true);
+      if (!repo) return showStatus('தயவுசெய்து Repository பெயரை உள்ளிடவும்.', true);
+      if (!title) return showStatus('செய்தித் தலைப்பை உள்ளிடவும்.', true);
+
+      localStorage.setItem('sn_token', token);
+      localStorage.setItem('sn_repo', repo);
+      localStorage.setItem('sn_path', path);
+
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'சேமிக்கப்படுகிறது...';
+
+      try {
+        const finalImage = await uploadImageToGitHub();
+        const { sha, articles } = await fetchNewsFile();
+
+        if (editIdx >= 0 && articles[editIdx]) {
+          articles[editIdx] = {
+            ...articles[editIdx],
+            title: title,
+            description: description || title,
+            category: category,
+            image: finalImage || '',
+            breaking: breaking
+          };
+          await saveNewsFile(articles, sha, `Update: ${title.slice(0, 35)}`);
+          showStatus('செய்தி வெற்றிகரமாகத் திருத்தப்பட்டது! GitHub Pages அப்டேட் ஆக 1–2 நிமிடங்கள் ஆகலாம்.');
+        } else {
+          const newArticle = {
+            id: Date.now().toString(),
+            title: title,
+            description: description || title,
+            category: category,
+            image: finalImage || '',
+            breaking: breaking,
+            source: 'சர்வநிச்சயம் செய்திகள்',
+            publishedAt: new Date().toISOString()
+          };
+          articles.unshift(newArticle);
+          await saveNewsFile(articles, sha, `Publish: ${title.slice(0, 35)}`);
+          showStatus('செய்தி வெற்றிகரமாக வெளியிடப்பட்டது! 1–2 நிமிடங்களில் தளத்தில் தோன்றும்.');
+        }
+
+        cancelEdit();
+        renderNewsList(articles);
+      } catch (e) {
+        showStatus(e.message, true);
+      } finally {
+        publishBtn.disabled = false;
+        if (parseInt(document.getElementById('editIndex').value, 10) < 0) {
+          publishBtn.textContent = 'செய்தியை வெளியிடு';
+        }
+      }
+    }
+
+    async function deleteNews(index) {
+      if (!confirm('இந்தச் செய்தியை நீக்க வேண்டுமா?')) return;
+      try {
+        const { sha, articles } = await fetchNewsFile();
+        articles.splice(index, 1);
+        await saveNewsFile(articles, sha, 'Delete news item');
+        showStatus('செய்தி நீக்கப்பட்டது.');
+        if (parseInt(document.getElementById('editIndex').value, 10) === index) {
+          cancelEdit();
+        }
+        renderNewsList(articles);
+      } catch (e) {
+        showStatus(e.message, true);
+      }
+    }
+
+    function renderNewsList(articles) {
+      const box = document.getElementById('existingNews');
+      if (!articles.length) {
+        box.innerHTML = '<div style="font-size:13px;color:#78716c;">செய்திகள் எதுவும் இல்லை.</div>';
+        return;
+      }
+      box.innerHTML = articles.slice(0, 20).map((item, idx) => `
+        <div class="news-item">
+          <div>
+            <div class="news-item-cat">${item.category || ''} ${item.image ? '· 📷' : ''}</div>
+            <div class="news-item-title">${item.title}</div>
+          </div>
+          <div class="item-btns">
+            <button class="edit-btn" onclick="startEdit(${idx})">Edit</button>
+            <button class="del-btn" onclick="deleteNews(${idx})">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadInitialList() {
+      const box = document.getElementById('existingNews');
+      try {
+        const data = await fetchNewsFile();
+        renderNewsList(data.articles);
+      } catch (err) {
+        box.innerHTML = `<div style="font-size:13px;color:#991b1b;">${err.message || 'Token மற்றும் Repository உள்ளிட்டதும் செய்திகள் தெரியும்.'}</div>`;
+      }
+    }
+
+    tokenInput.addEventListener('change', loadInitialList);
+    repoInput.addEventListener('change', loadInitialList);
+    pathInput.addEventListener('change', loadInitialList);
+    loadInitialList();
+  </script>
+</body>
+</html>
