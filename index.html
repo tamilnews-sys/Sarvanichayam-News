@@ -13,7 +13,6 @@
       --border: #e7e5e4;
       --primary: #991b1b;
       --primary-dark: #7f1d1d;
-      --accent-bg: #fef2f2;
     }
     body.dark {
       --bg: #12100e;
@@ -23,7 +22,6 @@
       --border: #2e2a26;
       --primary: #dc2626;
       --primary-dark: #b91c1c;
-      --accent-bg: #2a1717;
     }
     * { box-sizing: border-box; font-family: "Noto Sans Tamil", system-ui, -apple-system, sans-serif; }
     body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.65; transition: background 0.2s, color 0.2s; }
@@ -33,7 +31,7 @@
     .header-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); }
     .brand-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
     .brand-left { display: flex; align-items: center; gap: 12px; }
-    .logo-box { width: 48px; height: 48px; border-radius: 12px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; }
+    .logo-box { width: 48px; height: 48px; border-radius: 12px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; flex-shrink: 0; }
     .brand-title { font-size: 22px; font-weight: 800; margin: 0; }
     .brand-sub { font-size: 13px; color: var(--muted); margin: 2px 0 0; }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -44,9 +42,36 @@
     .breaking-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; overflow: hidden; }
     .breaking-tag { background: var(--primary); color: #fff; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
     .breaking-text { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-    .hero-banner { background: linear-gradient(135deg, #7c2d12, #450a0a); color: #fff; border-radius: 18px; padding: 24px 20px; text-align: center; margin-bottom: 16px; }
-    .hero-banner h2 { margin: 0 0 8px; font-size: 24px; }
-    .hero-banner p { margin: 0; font-size: 14px; opacity: 0.92; }
+
+    /* பழைய நேர்த்தியான Cover Banner அமைப்பு */
+    .hero-banner {
+      background: linear-gradient(135deg, #9a3412 0%, #7c2d12 45%, #450a0a 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 28px 20px;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(69, 10, 10, 0.18);
+    }
+    .hero-banner h2 {
+      margin: 0 0 10px;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+    .hero-main-sub {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fffbeb;
+    }
+    .hero-tags {
+      margin: 0;
+      font-size: 13px;
+      color: #fed7aa;
+      opacity: 0.95;
+    }
+
     .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
     .cat-btn { border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
     .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
@@ -101,7 +126,8 @@
 
     <div class="hero-banner">
       <h2>சர்வநிச்சயம் செய்திகள்</h2>
-      <p>தமிழ் கலாச்சாரமும் பண்பாடும் காக்கும் செய்தித் தளம் · தமிழ்ப் பண்பாடு · கலாச்சாரம் &amp; மரபு · இலங்கைத் தமிழர் · தமிழகம் · இலக்கியம் &amp; கலை</p>
+      <p class="hero-main-sub">தமிழ் கலாச்சாரமும் பண்பாடும் காக்கும் செய்தித் தளம்</p>
+      <p class="hero-tags">தமிழ்ப் பண்பாடு · கலாச்சாரம் &amp; மரபு · இலங்கைத் தமிழர் · தமிழகம் · இலக்கியம் &amp; கலை</p>
     </div>
 
     <div class="cats" id="categoryTabs"></div>
