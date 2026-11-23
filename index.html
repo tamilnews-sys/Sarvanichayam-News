@@ -43,39 +43,21 @@
     .breaking-tag { background: var(--primary); color: #fff; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
     .breaking-text { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 
-    /* cover.jpg பின்னணியுடன் கூடிய Cover Banner */
+    /* தெளிவான Cover Image Banner */
     .hero-banner {
-      position: relative;
-      background:
-        linear-gradient(135deg, rgba(69, 10, 10, 0.78) 0%, rgba(124, 45, 18, 0.72) 50%, rgba(28, 25, 23, 0.82) 100%),
-        url("cover.jpg?v=20261123") center center / cover no-repeat;
-      color: #fff;
       border-radius: 18px;
-      padding: 36px 20px;
-      text-align: center;
-      margin-bottom: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
       overflow: hidden;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      background: var(--card);
     }
-    .hero-banner h2 {
-      margin: 0 0 10px;
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
-    }
-    .hero-main-sub {
-      margin: 0 0 8px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #fffbeb;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
-    }
-    .hero-tags {
-      margin: 0;
-      font-size: 13px;
-      color: #fed7aa;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+    .hero-banner img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 360px;
+      object-fit: cover;
     }
 
     .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
@@ -131,9 +113,7 @@
     </div>
 
     <div class="hero-banner">
-      <h2>சர்வநிச்சயம் செய்திகள்</h2>
-      <p class="hero-main-sub">தமிழ் கலாச்சாரமும் பண்பாடும் காக்கும் செய்தித் தளம்</p>
-      <p class="hero-tags">தமிழ்ப் பண்பாடு · கலாச்சாரம் &amp; மரபு · இலங்கைத் தமிழர் · தமிழகம் · இலக்கியம் &amp; கலை</p>
+      <img src="cover.jpg?v=20261123" alt="சர்வநிச்சயம் செய்திகள்" />
     </div>
 
     <div class="cats" id="categoryTabs"></div>
