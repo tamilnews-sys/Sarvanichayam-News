@@ -49,15 +49,17 @@
       overflow: hidden;
       margin-bottom: 16px;
       border: 1px solid var(--border);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
       background: var(--card);
     }
     .hero-banner img {
       display: block;
       width: 100%;
       height: auto;
-      max-height: 360px;
+      max-height: 400px;
       object-fit: cover;
+      object-position: center top;
+      filter: contrast(1.03) saturate(1.05);
     }
 
     .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
@@ -76,6 +78,27 @@
     .card-title { font-size: 16px; font-weight: 800; margin: 0; }
     .card-desc { font-size: 14px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
     .card-meta { font-size: 12px; color: var(--muted); margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+
+    /* Like & Share Icons */
+    .card-actions { display: flex; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .icon-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .icon-action-btn.liked {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
     .empty-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; text-align: center; color: var(--muted); }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
     .modal-backdrop.open { display: flex; }
@@ -139,6 +162,7 @@
       <h2 id="modalTitle" style="margin:0 0 8px;font-size:20px;"></h2>
       <div class="card-meta" id="modalMeta" style="border:none;padding:0;"></div>
       <div class="modal-text" id="modalDesc"></div>
+      <div id="modalActions" class="card-actions" style="margin-top:12px;"></div>
     </div>
   </div>
 
@@ -146,6 +170,71 @@
     const CATEGORIES = ['அனைத்தும்', 'தமிழ்ப் பண்பாடு', 'கலாச்சாரம் & மரபு', 'இலங்கைத் தமிழர்', 'தமிழகம்', 'இலக்கியம் & கலை'];
     let allArticles = [];
     let selectedCategory = 'அனைத்தும்';
+
+    function getArticleId(article, fallbackIndex = 0) {
+      const raw = article.id || article.url || article.title || `news-${fallbackIndex}`;
+      return 'sn_like_' + btoa(unescape(encodeURIComponent(String(raw)))).slice(0, 24);
+    }
+
+    function getLikeState(key) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) || '{}');
+        return { liked: Boolean(saved.liked), count: Number(saved.count) || 0 };
+      } catch {
+        return { liked: false, count: 0 };
+      }
+    }
+
+    function toggleLike(event, key) {
+      event.stopPropagation();
+      const state = getLikeState(key);
+      const nextLiked = !state.liked;
+      const nextCount = nextLiked ? state.count + 1 : Math.max(0, state.count - 1);
+      localStorage.setItem(key, JSON.stringify({ liked: nextLiked, count: nextCount }));
+      applyFilters();
+      const modalBtn = document.querySelector(`#modalActions [data-like-key="${key}"]`);
+      if (modalBtn) {
+        modalBtn.classList.toggle('liked', nextLiked);
+        modalBtn.querySelector('.heart').textContent = nextLiked ? '♥' : '♡';
+        modalBtn.querySelector('.like-num').textContent = nextCount;
+      }
+    }
+
+    async function shareArticle(event, title, link) {
+      event.stopPropagation();
+      const shareUrl = link && link.trim() ? link.trim() : window.location.href;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: title || 'சர்வநிச்சயம் செய்திகள்', url: shareUrl });
+        } catch (err) {}
+      } else if (navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          alert('இணைப்பு நகலெடுக்கப்பட்டது.');
+        } catch (err) {}
+      }
+    }
+
+    function renderLikeShareHtml(article, key) {
+      const state = getLikeState(key);
+      const safeTitle = String(article.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const safeUrl = String(article.url || article.link || window.location.href).replace(/'/g, "\\'");
+      return `
+        <button type="button" class="icon-action-btn ${state.liked ? 'liked' : ''}" data-like-key="${key}" onclick="toggleLike(event, '${key}')" aria-label="Like">
+          <span class="heart">${state.liked ? '♥' : '♡'}</span>
+          <span class="like-num">${state.count}</span>
+        </button>
+        <button type="button" class="icon-action-btn" onclick="shareArticle(event, '${safeTitle}', '${safeUrl}')" aria-label="Share">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </button>
+      `;
+    }
 
     function updateClock() {
       const now = new Date();
@@ -182,7 +271,8 @@
       return d.toLocaleDateString('ta-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
-    function openArticleModal(article) {
+    function openArticleModal(article, index = 0) {
+      const key = getArticleId(article, index);
       document.getElementById('modalCat').textContent = article.category || '';
       document.getElementById('modalTitle').textContent = article.title || '';
       document.getElementById('modalDesc').textContent = article.description || '';
@@ -198,6 +288,7 @@
         imgEl.src = '';
         imgEl.style.display = 'none';
       }
+      document.getElementById('modalActions').innerHTML = renderLikeShareHtml(article, key);
       document.getElementById('newsModal').classList.add('open');
     }
 
@@ -210,13 +301,15 @@
     function renderBreaking(articles) {
       const bar = document.getElementById('breakingBar');
       const textEl = document.getElementById('breakingText');
-      const special = articles.find(a => a.breaking) || articles[0];
+      const idx = articles.findIndex(a => a.breaking);
+      const specialIndex = idx >= 0 ? idx : 0;
+      const special = articles[specialIndex];
       if (!special) {
         bar.style.display = 'none';
         return;
       }
       textEl.textContent = special.title;
-      textEl.onclick = () => openArticleModal(special);
+      textEl.onclick = () => openArticleModal(special, specialIndex);
       bar.style.display = 'flex';
     }
 
@@ -238,10 +331,11 @@
       }
 
       grid.innerHTML = '';
-      filtered.forEach(item => {
+      filtered.forEach((item, index) => {
+        const key = getArticleId(item, index);
         const card = document.createElement('div');
         card.className = 'card';
-        card.onclick = () => openArticleModal(item);
+        card.onclick = () => openArticleModal(item, index);
 
         const imgHtml = item.image && item.image.trim()
           ? `<img src="${item.image.trim()}" alt="${item.title || ''}" loading="lazy" />`
@@ -256,6 +350,9 @@
             <div class="card-meta">
               <span>${item.source || 'சர்வநிச்சயம் செய்திகள்'}</span>
               <span>${formatDate(item.publishedAt)}</span>
+            </div>
+            <div class="card-actions">
+              ${renderLikeShareHtml(item, key)}
             </div>
           </div>
         `;
