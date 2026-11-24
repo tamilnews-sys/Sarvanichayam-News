@@ -99,7 +99,7 @@
       color: var(--primary);
     }
 
-    .empty-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; text-align: center; color: var(--muted); }
+    .empty-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; text-align: center; color: var(--muted); grid-column: 1 / -1; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
     .modal-backdrop.open { display: flex; }
     .modal-box { background: var(--card); color: var(--text); border-radius: 18px; max-width: 680px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 20px; border: 1px solid var(--border); }
@@ -171,9 +171,22 @@
     let allArticles = [];
     let selectedCategory = 'அனைத்தும்';
 
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function getArticleId(article, fallbackIndex = 0) {
       const raw = article.id || article.url || article.title || `news-${fallbackIndex}`;
-      return 'sn_like_' + btoa(unescape(encodeURIComponent(String(raw)))).slice(0, 24);
+      try {
+        return 'sn_like_' + btoa(unescape(encodeURIComponent(String(raw)))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
+      } catch {
+        return `sn_like_${fallbackIndex}`;
+      }
     }
 
     function getLikeState(key) {
@@ -192,39 +205,47 @@
       const nextCount = nextLiked ? state.count + 1 : Math.max(0, state.count - 1);
       localStorage.setItem(key, JSON.stringify({ liked: nextLiked, count: nextCount }));
       applyFilters();
-      const modalBtn = document.querySelector(`#modalActions [data-like-key="${key}"]`);
-      if (modalBtn) {
-        modalBtn.classList.toggle('liked', nextLiked);
-        modalBtn.querySelector('.heart').textContent = nextLiked ? '♥' : '♡';
-        modalBtn.querySelector('.like-num').textContent = nextCount;
-      }
+
+      document.querySelectorAll(`[data-like-key="${key}"]`).forEach(btn => {
+        btn.classList.toggle('liked', nextLiked);
+        const heartEl = btn.querySelector('.heart');
+        const numEl = btn.querySelector('.like-num');
+        if (heartEl) heartEl.textContent = nextLiked ? '♥' : '♡';
+        if (numEl) numEl.textContent = nextCount;
+      });
     }
 
     async function shareArticle(event, title, link) {
       event.stopPropagation();
-      const shareUrl = link && link.trim() ? link.trim() : window.location.href;
+      const shareUrl = link && String(link).trim() ? String(link).trim() : window.location.href;
       if (navigator.share) {
         try {
           await navigator.share({ title: title || 'சர்வநிச்சயம் செய்திகள்', url: shareUrl });
-        } catch (err) {}
-      } else if (navigator.clipboard) {
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
           await navigator.clipboard.writeText(shareUrl);
           alert('இணைப்பு நகலெடுக்கப்பட்டது.');
+          return;
         } catch (err) {}
       }
+      prompt('இந்த இணைப்பை நகலெடுக்கவும்:', shareUrl);
     }
 
     function renderLikeShareHtml(article, key) {
       const state = getLikeState(key);
-      const safeTitle = String(article.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      const safeUrl = String(article.url || article.link || window.location.href).replace(/'/g, "\\'");
+      const safeTitle = encodeURIComponent(String(article.title || 'சர்வநிச்சயம் செய்திகள்'));
+      const safeUrl = encodeURIComponent(String(article.url || article.link || window.location.href));
       return `
         <button type="button" class="icon-action-btn ${state.liked ? 'liked' : ''}" data-like-key="${key}" onclick="toggleLike(event, '${key}')" aria-label="Like">
           <span class="heart">${state.liked ? '♥' : '♡'}</span>
           <span class="like-num">${state.count}</span>
         </button>
-        <button type="button" class="icon-action-btn" onclick="shareArticle(event, '${safeTitle}', '${safeUrl}')" aria-label="Share">
+        <button type="button" class="icon-action-btn" onclick="shareArticle(event, decodeURIComponent('${safeTitle}'), decodeURIComponent('${safeUrl}'))" aria-label="Share">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="18" cy="5" r="3"></circle>
             <circle cx="6" cy="12" r="3"></circle>
@@ -253,13 +274,13 @@
 
     function renderCategories() {
       const tabs = document.getElementById('categoryTabs');
-      tabs.innerHTML = CATEGORIES.map(cat => `
-        <button type="button" class="cat-btn ${cat === selectedCategory ? 'active' : ''}" onclick="selectCategory('${cat.replace(/'/g, "\\'")}')">${cat}</button>
+      tabs.innerHTML = CATEGORIES.map((cat, i) => `
+        <button type="button" class="cat-btn ${cat === selectedCategory ? 'active' : ''}" onclick="selectCategory(${i})">${escapeHtml(cat)}</button>
       `).join('');
     }
 
-    function selectCategory(cat) {
-      selectedCategory = cat;
+    function selectCategory(catIndex) {
+      selectedCategory = CATEGORIES[catIndex] || 'அனைத்தும்';
       renderCategories();
       applyFilters();
     }
@@ -277,13 +298,17 @@
       document.getElementById('modalTitle').textContent = article.title || '';
       document.getElementById('modalDesc').textContent = article.description || '';
       document.getElementById('modalMeta').innerHTML = `
-        <span>${article.source || 'சர்வநிச்சயம் செய்திகள்'}</span>
-        <span>${formatDate(article.publishedAt)}</span>
+        <span>${escapeHtml(article.source || 'சர்வநிச்சயம் செய்திகள்')}</span>
+        <span>${escapeHtml(formatDate(article.publishedAt))}</span>
       `;
       const imgEl = document.getElementById('modalImg');
-      if (article.image && article.image.trim()) {
-        imgEl.src = article.image.trim();
+      if (article.image && String(article.image).trim()) {
+        imgEl.src = String(article.image).trim();
+        imgEl.alt = article.title || '';
         imgEl.style.display = 'block';
+        imgEl.onerror = () => {
+          imgEl.style.display = 'none';
+        };
       } else {
         imgEl.src = '';
         imgEl.style.display = 'none';
@@ -301,10 +326,14 @@
     function renderBreaking(articles) {
       const bar = document.getElementById('breakingBar');
       const textEl = document.getElementById('breakingText');
-      const idx = articles.findIndex(a => a.breaking);
+      if (!Array.isArray(articles) || !articles.length) {
+        bar.style.display = 'none';
+        return;
+      }
+      const idx = articles.findIndex(a => a && a.breaking);
       const specialIndex = idx >= 0 ? idx : 0;
       const special = articles[specialIndex];
-      if (!special) {
+      if (!special || !special.title) {
         bar.style.display = 'none';
         return;
       }
@@ -315,41 +344,44 @@
 
     function applyFilters() {
       const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-      const filtered = allArticles.filter(item => {
-        const matchesCat = selectedCategory === 'அனைத்தும்' || item.category === selectedCategory;
-        const hay = `${item.title || ''} ${item.description || ''} ${item.category || ''}`.toLowerCase();
-        const matchesQuery = !q || hay.includes(q);
-        return matchesCat && matchesQuery;
-      });
+      const filteredWithIndex = allArticles
+        .map((item, originalIndex) => ({ item, originalIndex }))
+        .filter(({ item }) => {
+          const matchesCat = selectedCategory === 'அனைத்தும்' || item.category === selectedCategory;
+          const hay = `${item.title || ''} ${item.description || ''} ${item.category || ''}`.toLowerCase();
+          const matchesQuery = !q || hay.includes(q);
+          return matchesCat && matchesQuery;
+        });
 
-      document.getElementById('newsCount').textContent = `${filtered.length} செய்திகள்`;
+      document.getElementById('newsCount').textContent = `${filteredWithIndex.length} செய்திகள்`;
       const grid = document.getElementById('newsGrid');
 
-      if (!filtered.length) {
+      if (!filteredWithIndex.length) {
         grid.innerHTML = '<div class="empty-box">பொருத்தமான செய்திகள் எதுவும் இல்லை.</div>';
         return;
       }
 
       grid.innerHTML = '';
-      filtered.forEach((item, index) => {
-        const key = getArticleId(item, index);
+      filteredWithIndex.forEach(({ item, originalIndex }) => {
+        const key = getArticleId(item, originalIndex);
         const card = document.createElement('div');
         card.className = 'card';
-        card.onclick = () => openArticleModal(item, index);
+        card.onclick = () => openArticleModal(item, originalIndex);
 
-        const imgHtml = item.image && item.image.trim()
-          ? `<img src="${item.image.trim()}" alt="${item.title || ''}" loading="lazy" />`
+        const imgSrc = item.image && String(item.image).trim() ? String(item.image).trim() : '';
+        const imgHtml = imgSrc
+          ? `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.title || '')}" loading="lazy" onerror="this.style.display='none'" />`
           : '';
 
         card.innerHTML = `
           ${imgHtml}
           <div class="card-body">
-            <div class="card-cat">${item.category || 'செய்திகள்'}</div>
-            <h4 class="card-title">${item.title || ''}</h4>
-            <div class="card-desc">${item.description || ''}</div>
+            <div class="card-cat">${escapeHtml(item.category || 'செய்திகள்')}</div>
+            <h4 class="card-title">${escapeHtml(item.title || '')}</h4>
+            <div class="card-desc">${escapeHtml(item.description || '')}</div>
             <div class="card-meta">
-              <span>${item.source || 'சர்வநிச்சயம் செய்திகள்'}</span>
-              <span>${formatDate(item.publishedAt)}</span>
+              <span>${escapeHtml(item.source || 'சர்வநிச்சயம் செய்திகள்')}</span>
+              <span>${escapeHtml(formatDate(item.publishedAt))}</span>
             </div>
             <div class="card-actions">
               ${renderLikeShareHtml(item, key)}
@@ -361,16 +393,19 @@
     }
 
     async function loadNews() {
+      const grid = document.getElementById('newsGrid');
       try {
         const res = await fetch(`news.json?v=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error('news.json ஏற்ற முடியவில்லை');
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} — news.json கோப்பைப் பெற முடியவில்லை`);
+        }
         const data = await res.json();
-        allArticles = Array.isArray(data) ? data : (data.articles || []);
+        allArticles = Array.isArray(data) ? data : (Array.isArray(data.articles) ? data.articles : []);
         renderBreaking(allArticles);
         applyFilters();
       } catch (err) {
-        document.getElementById('newsGrid').innerHTML =
-          '<div class="empty-box">செய்திகளை ஏற்ற முடியவில்லை. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.</div>';
+        document.getElementById('newsCount').textContent = '0 செய்திகள்';
+        grid.innerHTML = `<div class="empty-box">செய்திகளை ஏற்ற முடியவில்லை (${escapeHtml(err.message)}). சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.</div>`;
       }
     }
 
